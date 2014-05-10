@@ -2,19 +2,22 @@ var gpio = require("pi-gpio");
 
 var INTERVAL = 500;
 
+var LOW = 0;
+var HIGH = 1;
+
 var LED_PIN = 12;
 
 // left antennae of bugbot
 var ANTLEFT_PIN = 16;
 
 var turnOn = function(){
-  gpio.write(LED_PIN, 1, function(){
+  gpio.write(LED_PIN, HIGH, function(){
     //console.log("turned on");
   });
 };
 
 var turnOff = function(){
-  gpio.write(LED_PIN, 0, function(){
+  gpio.write(LED_PIN, LOW, function(){
     //console.log("turned off");
   });
 };
@@ -23,7 +26,8 @@ var loop = function(){
 
   gpio.read(ANTLEFT_PIN, function(err, value){
     console.log(value);
-    if (value === 0){
+    console.log(err);
+    if (value === HIGH){
       // circuit is closed, bug has hit something
       // stop and initiate rotating
       turnOn();
