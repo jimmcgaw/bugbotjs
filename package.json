@@ -1,0 +1,24 @@
+{
+  "name": "bugbotjs",
+  "version": "0.0.0",
+  "description": "bugbot javascript for raspberry pi",
+  "main": "bugbot.js",
+  "dependencies": {
+    "gpio": "~0.2.5",
+    "pi-gpio": "~0.0.5"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/smoochy/bugbotjs.git"
+  },
+  "author": "Jim & Rémy",
+  "license": "MPL",
+  "bugs": {
+    "url": "https://github.com/smoochy/bugbotjs/issues"
+  },
+  "homepage": "https://github.com/smoochy/bugbotjs"
+}
