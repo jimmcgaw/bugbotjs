@@ -9,6 +9,7 @@ var LED_PIN = 12;
 
 // left antennae of bugbot
 var ANTLEFT_PIN = 16;
+var ANTLEFT_OUT_PIN = 18;
 
 var turnOn = function(){
   gpio.write(LED_PIN, HIGH, function(){
@@ -26,7 +27,7 @@ var loop = function(){
 
   gpio.read(ANTLEFT_PIN, function(err, value){
     console.log(value);
-    console.log(err);
+    //console.log(err);
     if (value === HIGH){
       // circuit is closed, bug has hit something
       // stop and initiate rotating
@@ -48,9 +49,11 @@ var setup = function(){
   });
 
   console.log("setting antennae left pin");
-  gpio.open(ANTLEFT_PIN, "input", function(err){
+  gpio.open(ANTLEFT_PIN, "input", function(err){});
+  gpio.open(ANTLEFT_OUT_PIN, "output", function(err){
+    gpio.write(ANTLEFT_OUT_PIN, HIGH, function(){});
   });
-
+  
   setInterval(loop, INTERVAL);
 };
 
@@ -63,7 +66,9 @@ process.stdin.resume();//so the program will not close instantly
 
 function exitHandler(options, err) {
     if (options.cleanup){
+      turnOff();
       gpio.close(ANTLEFT_PIN);
+      gpio.close(ANTLEFT_OUT_PIN);
       gpio.close(LED_PIN);
     }
     if (options.exit) process.exit();
