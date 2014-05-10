@@ -5,22 +5,22 @@ var INTERVAL = 500;
 var LOW = 0;
 var HIGH = 1;
 
-var LED_PIN = 12;
+var LEFT_MOTOR_ENABLE = 7;
+var LEFT_MOTOR_1 = 12;
+var LEFT_MOTOR_2 = 22;
 
 // left antennae of bugbot
 var ANTLEFT_PIN = 16;
 var ANTLEFT_OUT_PIN = 18;
 
 var turnOn = function(){
-  gpio.write(LED_PIN, HIGH, function(){
-    //console.log("turned on");
-  });
+  gpio.write(LEFT_MOTOR_1, HIGH, function(){});
+  gpio.write(LEFT_MOTOR_2, LOW, function(){});
 };
 
 var turnOff = function(){
-  gpio.write(LED_PIN, LOW, function(){
-    //console.log("turned off");
-  });
+  gpio.write(LEFT_MOTOR_1, LOW, function(){});
+  gpio.write(LEFT_MOTOR_1, LOW, function(){});
 };
 
 var loop = function(){
@@ -45,8 +45,11 @@ var setup = function(){
   console.log("running setup");
 
   console.log("setting led pin");
-  gpio.open(LED_PIN, "output", function(err) {
+  gpio.open(LEFT_MOTOR_ENABLE, "output", function(err) {
+    gpio.write(LEFT_MOTOR_ENABLE, HIGH, function(){});
   });
+  gpio.open(LEFT_MOTOR_1, "output", function(err) {});
+  gpio.open(LEFT_MOTOR_2, "output", function(err) {});
 
   console.log("setting antennae left pin");
   gpio.open(ANTLEFT_PIN, "input", function(err){});
@@ -69,7 +72,9 @@ function exitHandler(options, err) {
       turnOff();
       gpio.close(ANTLEFT_PIN);
       gpio.close(ANTLEFT_OUT_PIN);
-      gpio.close(LED_PIN);
+      gpio.close(LEFT_MOTOR_ENABLE);
+      gpio.close(LEFT_MOTOR_1);
+      gpio.close(LEFT_MOTOR_2);
     }
     if (options.exit) process.exit();
 }
