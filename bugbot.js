@@ -21,7 +21,7 @@ var loop = function(){
 
   gpio.read(ANTLEFT_PIN, function(err, value){
     console.log(value);
-    if (value > 0){
+    if (value === 0){
       // circuit is closed, bug has hit something
       // stop and initiate rotating
       turnOn();
