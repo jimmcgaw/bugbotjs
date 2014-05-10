@@ -1,5 +1,7 @@
 var gpio = require("pi-gpio");
 
+var INTERVAL = 500;
+
 var LED_PIN = 12;
 
 // left antennae of bugbot
@@ -45,7 +47,7 @@ var setup = function(){
   gpio.open(ANTLEFT_PIN, "input", function(err){
   });
 
-  setInterval(loop, 500);
+  setInterval(loop, INTERVAL);
 };
 
 setup();
