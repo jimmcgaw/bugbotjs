@@ -62,6 +62,15 @@ var setup = function(){
 
 setup();
 
+var http = require('http');
+var fs = require('fs');
+var index = fs.readFileSync('ui/app/index.html');
+
+http.createServer(function (req, res) {
+  res.writeHead(200, {'Content-Type': 'text/plain'});
+  res.end(index);
+}).listen(8080);
+
 
 // close all pins on program exit or ctrl-c
 // src: http://stackoverflow.com/questions/14031763/doing-a-cleanup-action-just-before-node-js-exits
