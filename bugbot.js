@@ -1,6 +1,6 @@
 var gpio = require("pi-gpio");
 
-var INTERVAL = 50;
+var INTERVAL = 500;
 
 var LOW = 0;
 var HIGH = 1;
@@ -17,26 +17,10 @@ var RIGHT_MOTOR_2 = 22;
 var LEFT_MOTOR_1 = 7;
 var LEFT_MOTOR_2 = 15;
 
-// for cleanup at bottom
-var ALL_PINS = [
-  RIGHT_WHISKER_IN,
-  RIGHT_WHISKER_OUT,
-  LEFT_WHISKER_IN,
-  LEFT_WHISKER_OUT,
-  RIGHT_MOTOR_1,
-  RIGHT_MOTOR_2,
-  LEFT_MOTOR_1,
-  LEFT_MOTOR_2
-];
-
 // whisker component of a motor
 var Whisker = function(pins){
   this.pinIn = pins.pinIn;
   this.out = pins.out; 
-};
-
-Whisker.prototype.hasCollided = function(){
- return this.pinIn === HIGH; // whisker has hit something?
 };
 
 // this controls the state of a single servo motor
@@ -53,9 +37,15 @@ var Motor = function(pins){
 };
 
 Motor.prototype.enable = function(){
-  gpio.open(this.whisker.pinIn, "input", function(){});
-  gpio.open(this.whisker.out, "output", function(){
-    this.write(this.whisker.out, HIGH, function(){});
+  var whisker_in = this.whisker.pinIn;
+  gpio.open(whisker_in, "input", function(){
+    gpio.write(whisker_in, HIGH, function(){});
+  });
+  console.log(this.whisker.out);
+  var whisker_out = this.whisker.out;
+  gpio.open(whisker_out, "output", function(){
+    console.log(whisker_out);
+    gpio.write(whisker_out, HIGH, function(){});
   });
   gpio.open(this.pins.motor_1, "output", function(){})
   gpio.open(this.pins.motor_2, "output", function(){})
@@ -103,15 +93,23 @@ KnightRider.prototype.startEngine = function(){
   }
 };
 
-KnightRider.prototype.collided = function(){
-  var hasCollided = false;
-  for (var i = 0, len = this.motors.length; i < len; i++){
-    var motor = this.motors[i];
-    if (motor.whisker.hasCollided()){
-      hasCollided = true;
+KnightRider.prototype.checkWhiskers = function(){
+  var carBrain = this;
+
+  var motor = this.motors[0];
+  if (!motor) return;
+
+  gpio.read(motor.whisker.pinIn, function(err, value){
+    console.log("read from whisker");
+    console.log(value);
+    if (value === HIGH){
+      console.log("halting vehicle");
+      carBrain.halt();  // whisker has hit something
+    } else {
+      console.log("vehicle forward");
+      carBrain.forward();
     }
-  }
-  return hasCollided;
+  });
 };
 
 // motor factory class for spawning motors
@@ -152,16 +150,7 @@ console.log(knightRider.motors.length);
 
 // this guy runs over and over in continuous loop
 var loop = function(){
-  console.log(knightRider.collided());
-  if (knightRider.collided() ){
-    console.log("halting!");
-    knightRider.halt();
-    // rotate and do cool stuff etc
-  } else {
-    console.log('more forward');
-    knightRider.forward();
-  }
-  
+  knightRider.checkWhiskers(); 
 };
 
 var setup = function(){
@@ -180,6 +169,17 @@ var setup = function(){
 setup();
 
 
+// for cleanup on exit
+var ALL_PINS = [
+  RIGHT_WHISKER_IN,
+  RIGHT_WHISKER_OUT,
+  LEFT_WHISKER_IN,
+  LEFT_WHISKER_OUT,
+  RIGHT_MOTOR_1,
+  RIGHT_MOTOR_2,
+  LEFT_MOTOR_1,
+  LEFT_MOTOR_2
+];
 
 // close all pins on program exit or ctrl-c
 // src: http://stackoverflow.com/questions/14031763/doing-a-cleanup-action-just-before-node-js-exits
