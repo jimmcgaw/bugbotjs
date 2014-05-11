@@ -122,13 +122,18 @@ KnightRider.prototype.halt = function(){
 
 KnightRider.prototype.right = function(){
   this.halt();
-  
+  this.leftMotor.forward();
+  this.rightMotor.reverse();
 };
 
 KnightRider.prototype.left = function(){
-  for (var i = 0, len = this.motors.length; i < len; i++){ 
-    this.motors[i].halt();
-  } 
+  this.halt();
+  this.rightMotor.forward();
+  this.leftMotor.reverse();
+};
+
+KnightRider.prototype.rotate = function(){
+  this.left();
 };
 
 KnightRider.prototype.startEngine = function(){
@@ -140,7 +145,13 @@ KnightRider.prototype.startEngine = function(){
   }
 };
 
+
 KnightRider.prototype.checkWhiskers = function(){
+  // if this.state !== "forward"{
+  //   return;
+  // }
+
+  var carBrain = this;
   var whiskers = this.whiskers;
 
   for (var i = 0, len = whiskers.length; i < len; i++){
@@ -148,6 +159,10 @@ KnightRider.prototype.checkWhiskers = function(){
     console.log( "reading from pin " + whisker.pinIn );
     gpio.read(whisker.pinIn, function(err, value){
       console.log(value);
+      if (value === HIGH){
+        // we have a collision, reset
+        carBrain.reset();
+      }
     });
   }
 
@@ -193,14 +208,13 @@ KnightRider.prototype.update = function(){
   // check object state
   if (this.state === "forward"){
     this.forward();
+    this.checkWhiskers();
   } else if (this.state === "halt"){
     this.halt();
-  } else if (this.state === "collision"){
-    // nop
   } else if (this.state === "reverse") {
-    // this.reverse();
+    this.reverse();
   } else if (this.state === "rotating") {
-    // this.rotate();
+    this.rotate();
   }
 
 };
