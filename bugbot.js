@@ -63,8 +63,17 @@ Motor.prototype.halt = function(){
 // start motor forward
 Motor.prototype.forward = function(){
   console.log("Motor on pin " + this.pins.motor_1 + " set to forward");
-  gpio.write(this.pins.motor_1, HIGH, function(){});
+  // TODO : abstract this away
   gpio.write(this.pins.motor_2, LOW, function(){});
+  gpio.write(this.pins.motor_1, HIGH, function(){});
+};
+
+// start motor backwards
+Motor.prototype.reverse = function(){
+  console.log("Motor on pin " + this.pins.motor_1 + " set to forward");
+  // TODO : abstract this away
+  gpio.write(this.pins.motor_1, LOW, function(){});
+  gpio.write(this.pins.motor_2, HIGH, function(){});
 };
 
 // car brain - this commands and manages the motors in aggregate
@@ -72,8 +81,16 @@ Motor.prototype.forward = function(){
 // @param Array 'whiskers' - array of Whisker objects
 //
 var KnightRider = function(motors, whiskers){
-  this.motors = motors || [];
-  this.whiskers = whiskers || []; 
+  this.whiskers = whiskers || [];
+
+  this.leftMotor = motors.leftMotor;
+  this.rightMotor = motors.rightMotor;
+
+  this.motors = [];
+  this.addMotor(this.leftMotor);
+  this.addMotor(this.rightMotor);
+
+  this.state = "forward";
 };
 
 KnightRider.prototype.addMotor = function(motor){
@@ -87,6 +104,12 @@ KnightRider.prototype.addWhisker = function(whisker){
 KnightRider.prototype.forward = function(){
   for (var i = 0, len = this.motors.length; i < len; i++){
     this.motors[i].forward();
+  }
+};
+
+KnightRider.prototype.reverse = function(){
+  for (var i = 0, len = this.motors.length; i < len; i++){
+    this.motors[i].reverse();
   }
 };
 
@@ -118,16 +141,55 @@ KnightRider.prototype.checkWhiskers = function(){
 
 };
 
+// intiates a state sequence that resets the robot
+// to forward in a different direction.
+KnightRider.prototype.reset = function(){
+  // stop robot immediately ( t = 0 seconds )
+  this.state = "halt";
+
+  // t = 2 : go in reverse 
+  setTimeout(function(){
+    this.state = "reverse";
+  }, 2000);
+
+  // t = 3 : stop again for a second
+  setTimeout(function(){
+    this.state = "halt"
+  }, 3000);
+
+  // t = 4 : rotate for 2 seconds
+  setTimeout(function(){
+    this.state = "rotate"
+  }, 4000);
+
+  // t = 6 : stop again for a half second
+  setTimeout(function(){
+    this.state = "halt"
+  }, 6000);
+
+  // t = 6.5 : stop again for a second
+  setTimeout(function(){
+    this.state = "forward"
+  }, 6500);
+};
+
 // runs in loop; checks whiskers and turns robot if
 // we detect a whisker collision
 KnightRider.prototype.update = function(){
 
   // check object state
-  
-  
-  // why do I need to call this over and over?
-  this.forward();
-  
+  if (this.state === "forward"){
+    this.foward();
+  } else if (this.state === "halt"){
+    this.halt();
+  } else if (this.state === "collision"){
+    // nop
+  } else if (this.state === "reverse") {
+    // this.reverse();
+  } else if (this.state === "rotating") {
+    // this.rotate();
+  }
+
   // check for collisions
   this.checkWhiskers();
 };
@@ -158,9 +220,10 @@ var rightMotorPins = {
 var rightMotor = motorMaker.createMotor(rightMotorPins);
 var leftMotor = motorMaker.createMotor(leftMotorPins);
 
-var knightRider = new KnightRider();
-knightRider.addMotor(rightMotor);
-knightRider.addMotor(leftMotor);
+var knightRider = new KnightRider({
+  leftMotor : leftMotor,
+  rightMotor : rightMotor
+});
 
 console.log(knightRider.motors.length);
 
