@@ -106,17 +106,12 @@ KnightRider.prototype.startEngine = function(){
 
 KnightRider.prototype.checkWhiskers = function(){
   var whiskers = this.whiskers;
-  var currentWhisker = whiskers[0];
 
   for (var i = 0, len = whiskers.length; i < len; i++){
     var whisker = whiskers[i];
     console.log( "reading from pin " + whisker.pinIn );
     gpio.read(whisker.pinIn, function(err, value){
       console.log(value);
-      if (value === HIGH){
-        break;
-        return true;
-      }
     });
   }
 
@@ -125,14 +120,7 @@ KnightRider.prototype.checkWhiskers = function(){
 // runs in loop; checks whiskers and turns robot if
 // we detect a whisker collision
 KnightRider.prototype.run = function(){
-  var hasCollided = this.checkWhiskers();
-  console.log("Checked whiskers, result is: " + hasCollided);
-  if (hasCollided){
-    this.halt();
-    // do some rotation somehow
-  } else {
-    this.foward();
-  }
+  this.checkWhiskers();
 };
 
 console.log("creating MOTORS!");
