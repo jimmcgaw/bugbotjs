@@ -102,6 +102,7 @@ KnightRider.prototype.addWhisker = function(whisker){
 };
 
 KnightRider.prototype.forward = function(){
+  console.log("setting vehicle forward");
   for (var i = 0, len = this.motors.length; i < len; i++){
     this.motors[i].forward();
   }
@@ -114,6 +115,17 @@ KnightRider.prototype.reverse = function(){
 };
 
 KnightRider.prototype.halt = function(){
+  for (var i = 0, len = this.motors.length; i < len; i++){ 
+    this.motors[i].halt();
+  } 
+};
+
+KnightRider.prototype.right = function(){
+  this.halt();
+  
+};
+
+KnightRider.prototype.left = function(){
   for (var i = 0, len = this.motors.length; i < len; i++){ 
     this.motors[i].halt();
   } 
@@ -177,9 +189,10 @@ KnightRider.prototype.reset = function(){
 // we detect a whisker collision
 KnightRider.prototype.update = function(){
 
+  console.log("vehicle state: " + this.state);
   // check object state
   if (this.state === "forward"){
-    this.foward();
+    this.forward();
   } else if (this.state === "halt"){
     this.halt();
   } else if (this.state === "collision"){
@@ -190,8 +203,6 @@ KnightRider.prototype.update = function(){
     // this.rotate();
   }
 
-  // check for collisions
-  this.checkWhiskers();
 };
 
 console.log("creating MOTORS!");
