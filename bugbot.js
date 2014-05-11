@@ -107,7 +107,7 @@ KnightRider.prototype.collided = function(){
   var hasCollided = false;
   for (var i = 0, len = this.motors.length; i < len; i++){
     var motor = this.motors[i];
-    if (motor.whisker.hasCollided){
+    if (motor.whisker.hasCollided()){
       hasCollided = true;
     }
   }
@@ -152,11 +152,13 @@ console.log(knightRider.motors.length);
 
 // this guy runs over and over in continuous loop
 var loop = function(){
-  console.log(knightRider.hasCollided());
-  if (knightRider.hasCollided() ){
+  console.log(knightRider.collided());
+  if (knightRider.collided() ){
+    console.log("halting!");
     knightRider.halt();
     // rotate and do cool stuff etc
   } else {
+    console.log('more forward');
     knightRider.forward();
   }
   
@@ -170,6 +172,7 @@ var setup = function(){
 
   console.log("forward");
   knightRider.forward();  //tallyho!
+  console.log("running loop");
   setInterval(loop, INTERVAL);
 };
 
