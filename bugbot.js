@@ -131,15 +131,11 @@ MotorMaker.prototype.createMotor = function(pins){
 var motorMaker = new MotorMaker();
 
 var leftMotorPins = {
-  whisker_in : LEFT_WHISKER_IN,
-  whisker_out : LEFT_WHISKER_OUT,
   motor_1 : LEFT_MOTOR_1,
   motor_2 : LEFT_MOTOR_2
 };
 
 var rightMotorPins = {
-  whisker_in : RIGHT_WHISKER_IN,
-  whisker_out : RIGHT_WHISKER_OUT,
   motor_1 : RIGHT_MOTOR_1,
   motor_2 : RIGHT_MOTOR_2
 };
