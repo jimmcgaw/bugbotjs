@@ -6,10 +6,10 @@ var LOW = 0;
 var HIGH = 1;
 
 // whisker pins
-var RIGHT_WHISKER_1 = 16;
-var RIGHT_WHISKER_2 = 18;
-var LEFT_WHISKER_1 = 13;
-var LEFT_WHISKER_2 = 15;
+var RIGHT_WHISKER_IN = 16;
+var RIGHT_WHISKER_OUT = 18;
+var LEFT_WHISKER_IN = 13;
+var LEFT_WHISKER_OUT = 15;
 
 // motor pins
 var RIGHT_MOTOR_1 = 12;
@@ -19,82 +19,157 @@ var LEFT_MOTOR_2 = 15;
 
 // for cleanup at bottom
 var ALL_PINS = [
-  RIGHT_WHISKER_1,
-  RIGHT_WHISKER_2,
-  LEFT_WHISKER_1,
-  LEFT_WHISKER_2,
+  RIGHT_WHISKER_IN,
+  RIGHT_WHISKER_OUT,
+  LEFT_WHISKER_IN,
+  LEFT_WHISKER_OUT,
   RIGHT_MOTOR_1,
   RIGHT_MOTOR_2,
   LEFT_MOTOR_1,
   LEFT_MOTOR_2
 ];
 
-var loop = function(){
+// whisker component of a motor
+var Whisker = function(pins){
+  this.in = pins.in;
+  this.out = pins.out; 
+};
 
-  gpio.read(RIGHT_WHISKER_2, function(err, value){
-    console.log(value);
-    //console.log(err);
-    if (value === HIGH){
-      // circuit is closed, bug has hit something
-      // stop and initiate rotating
-      stopMotors();
-    } else {
-      // all's clear
-      startMotors();
+Whisker.prototype.hasCollided = function(){
+ return this.in === HIGH; // whisker has hit something?
+};
+
+// this controls the state of a single servo motor
+//
+// 'pins' defines the following:
+// this.whisker_in
+// this.whisker_out
+// this.motor_1
+// this.motor_2
+var Motor = function(pins){
+  this.pins = pins;
+
+  this.whisker = new Whisker({ in : this.pins.whisker_in, out : this.pins.whisker_out });
+};
+
+Motor.prototype.enable = function(){
+  gpio.open(this.whisker.in, "input", function(){});
+  gpio.open(this.whisker.out, "output", function(){
+    this.write(this.whisker.out, HIGH, function(){});
+  });
+  gpio.open(this.pins.motor_1, "output", function(){})
+  gpio.open(this.pins.motor_2, "output", function(){})
+  
+};
+
+// bring to complete stop
+Motor.prototype.halt = function(){
+  gpio.write(this.pins.motor_1, LOW, function(){});
+  gpio.write(this.pins.motor_2, LOW, function(){});
+};
+
+// start motor forward
+Motor.prototype.forward = function(){
+  gpio.write(this.pins.motor_1, HIGH, function(){});
+  gpio.write(this.pins.motor_2, LOW, function(){});
+};
+
+// this commands and manages the motors in aggregate
+// @param Array 'motors'
+//
+var KnightRider = function(motors){
+  this.motors = motors || []; 
+};
+
+KnightRider.prototype.addMotor = function(motor){
+  this.motors.push(motor);
+};
+
+KnightRider.prototype.forward = function(){
+  for (var i = 0, len = this.motors.length; i < len; i++){
+    this.motors[i].forward();
+  }
+};
+
+KnightRider.prototype.halt = function(){
+  for (var i = 0, len = this.motors.length; i < len; i++){ 
+    this.motors[i].halt();
+  } 
+};
+
+KnightRider.prototype.startEngine = function(){
+  for (var i = 0, len = this.motors.length; i < len; i++){
+    this.motors[i].enable();
+  }
+};
+
+KnightRider.prototype.collided = function(){
+  var hasCollided = false;
+  for (var i = 0, len = this.motors.length; i < len; i++){
+    var motor = this.motors[i];
+    if (motor.whisker.hasCollided){
+      hasCollided = true;
     }
-    // TODO: instead of constant adjusting, store value and only call these if change?
-
-  }); 
-
+  }
+  return hasCollided;
 };
 
-var startMotors = function(){
-  startLeft();
-  startRight();
+// motor factory class for spawning motors
+var MotorMaker = function(){
 };
 
-var startLeft = function(){
-  gpio.write(LEFT_MOTOR_1, HIGH, function(){});
-  gpio.write(LEFT_MOTOR_2, LOW, function(){});
+MotorMaker.prototype.motorClass = Motor;
+
+MotorMaker.prototype.createMotor = function(pins){
+  return new this.motorClass(pins);
 };
 
-var startRight = function(){
-  gpio.write(RIGHT_MOTOR_1, HIGH, function(){});
-  gpio.write(RIGHT_MOTOR_2, LOW, function(){});
+var motorMaker = new MotorMaker();
+
+var leftMotorPins = {
+  whisker_in : LEFT_WHISKER_IN,
+  whisker_out : LEFT_WHISKER_OUT,
+  motor_1 : LEFT_MOTOR_1,
+  motor_2 : LEFT_MOTOR_2
 };
 
-var stopMotors = function(){
-  stopLeft();
-  stopRight();
+var rightMotorPins = {
+  whisker_in : RIGHT_WHISKER_IN,
+  whisker_out : RIGHT_WHISKER_OUT,
+  motor_1 : RIGHT_MOTOR_1,
+  motor_2 : RIGHT_MOTOR_2
 };
 
-var stopLeft = function(){
-  gpio.write(LEFT_MOTOR_1, LOW, function(){});
-  gpio.write(LEFT_MOTOR_2, LOW, function(){});
-};
+var rightMotor = motorMaker.createMotor(rightMotorPins);
+var leftMotor = motorMaker.createMotor(leftMotorPins);
 
-var stopRight = function(){
-  gpio.write(RIGHT_MOTOR_1, LOW, function(){});
-  gpio.write(RIGHT_MOTOR_2, LOW, function(){});
+var knightRider = new KnightRider();
+knightRider.addMotor(rightMotor);
+knightRider.addMotor(leftMotor);
+
+console.log("MOTORS!");
+console.log(knightRider.motors.length);
+
+// this guy runs over and over in continuous loop
+var loop = function(){
+  console.log(knightRider.hasCollided());
+  if (knightRider.hasCollided() ){
+    knightRider.halt();
+    // rotate and do cool stuff etc
+  } else {
+    knightRider.forward();
+  }
+  
 };
 
 var setup = function(){
   console.log("running setup");
-
   console.log("setting led pin");
 
-  gpio.open(RIGHT_MOTOR_1, "output", function(err) {});
-  gpio.open(RIGHT_MOTOR_2, "output", function(err) {});
+  knightRider.startEngine();  // enable motor and whisker pins
 
-  gpio.open(LEFT_MOTOR_1, "output", function(err) {});
-  gpio.open(LEFT_MOTOR_2, "output", function(err) {});
-
-  console.log("setting antennae left pin");
-  gpio.open(RIGHT_WHISKER_1, "input", function(err){});
-  gpio.open(RIGHT_WHISKER_2, "output", function(err){
-    gpio.write(RIGHT_WHISKER_2, HIGH, function(){});
-  });
-  
+  console.log("forward");
+  knightRider.forward();  //tallyho!
   setInterval(loop, INTERVAL);
 };
 
