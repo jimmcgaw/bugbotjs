@@ -31,12 +31,12 @@ var ALL_PINS = [
 
 // whisker component of a motor
 var Whisker = function(pins){
-  this.in = pins.in;
+  this.pinIn = pins.pinIn;
   this.out = pins.out; 
 };
 
 Whisker.prototype.hasCollided = function(){
- return this.in === HIGH; // whisker has hit something?
+ return this.pinIn === HIGH; // whisker has hit something?
 };
 
 // this controls the state of a single servo motor
@@ -49,11 +49,11 @@ Whisker.prototype.hasCollided = function(){
 var Motor = function(pins){
   this.pins = pins;
 
-  this.whisker = new Whisker({ in : this.pins.whisker_in, out : this.pins.whisker_out });
+  this.whisker = new Whisker({ pinIn : this.pins.whisker_in, out : this.pins.whisker_out });
 };
 
 Motor.prototype.enable = function(){
-  gpio.open(this.whisker.in, "input", function(){});
+  gpio.open(this.whisker.pinIn, "input", function(){});
   gpio.open(this.whisker.out, "output", function(){
     this.write(this.whisker.out, HIGH, function(){});
   });
