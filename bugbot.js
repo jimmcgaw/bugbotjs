@@ -62,11 +62,12 @@ Motor.prototype.halt = function(){
 
 // start motor forward
 Motor.prototype.forward = function(){
+  console.log("Motor on pin " + this.pins.motor_1 + " set to forward");
   gpio.write(this.pins.motor_1, HIGH, function(){});
   gpio.write(this.pins.motor_2, LOW, function(){});
 };
 
-// this commands and manages the motors in aggregate
+// car brain - this commands and manages the motors in aggregate
 // @param Array 'motors' - array of Motor objects
 // @param Array 'whiskers' - array of Whisker objects
 //
@@ -120,6 +121,10 @@ KnightRider.prototype.checkWhiskers = function(){
 // runs in loop; checks whiskers and turns robot if
 // we detect a whisker collision
 KnightRider.prototype.run = function(){
+  // why do I need to call this over and over?
+  this.forward();
+  
+  // check for collisions
   this.checkWhiskers();
 };
 
