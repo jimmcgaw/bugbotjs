@@ -18,6 +18,10 @@ var LEFT_MOTOR_1 = 7;
 var LEFT_MOTOR_2 = 15;
 
 // manages and senses the state of a single whisker
+//
+// @param Object 'pins'
+//   pins.pinIn
+//   pins.out
 var Whisker = function(pins){
   this.pinIn = pins.pinIn;
   this.out = pins.out; 
@@ -37,8 +41,6 @@ Whisker.prototype.enable = function(){
 // this controls the state of a single servo motor
 //
 // @param Object 'pins'
-//   pins.whisker_in
-//   pins.whisker_out
 //   pins.motor_1
 //   pins.motor_2
 var Motor = function(pins){
