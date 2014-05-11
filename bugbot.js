@@ -8,8 +8,8 @@ var HIGH = 1;
 // whisker pins
 var RIGHT_WHISKER_IN = 16;
 var RIGHT_WHISKER_OUT = 18;
-var LEFT_WHISKER_IN = 13;
-var LEFT_WHISKER_OUT = 15;
+var LEFT_WHISKER_IN = 11;
+var LEFT_WHISKER_OUT = 13;
 
 // motor pins
 var RIGHT_MOTOR_1 = 12;
@@ -33,20 +33,22 @@ var Whisker = function(pins){
 var Motor = function(pins){
   this.pins = pins;
 
-  this.whisker = new Whisker({ pinIn : this.pins.whisker_in, out : this.pins.whisker_out });
+  this.whisker = new Whisker({ pinIn : pins.whisker_in, out : pins.whisker_out });
 };
 
 Motor.prototype.enable = function(){
+  console.log("enabling whisker pins " + this.whisker.pinIn + " and " + this.whisker.out);
   var whisker_in = this.whisker.pinIn;
-  gpio.open(whisker_in, "input", function(){
-    gpio.write(whisker_in, HIGH, function(){});
-  });
+  gpio.open(whisker_in, "input", function(){});
+  
   console.log(this.whisker.out);
   var whisker_out = this.whisker.out;
   gpio.open(whisker_out, "output", function(){
     console.log(whisker_out);
     gpio.write(whisker_out, HIGH, function(){});
   });
+  
+  console.log("enabling motor pins " + this.pins.motor_1 + " and " + this.pins.motor_2);
   gpio.open(this.pins.motor_1, "output", function(){})
   gpio.open(this.pins.motor_2, "output", function(){})
   
@@ -95,21 +97,17 @@ KnightRider.prototype.startEngine = function(){
 
 KnightRider.prototype.checkWhiskers = function(){
   var carBrain = this;
+  var whiskers = this.motors.map(function(motor){ return motor.whisker });
+  console.log(whiskers);
 
-  var motor = this.motors[0];
-  if (!motor) return;
+  for (var i = 0, len = whiskers.length; i < len; i++){
+    var whisker = whiskers[i];
+    console.log( "reading from pin " + whisker.pinIn );
+    gpio.read(whisker.pinIn, function(err, value){
+      console.log(value);
+    });
+  }
 
-  gpio.read(motor.whisker.pinIn, function(err, value){
-    console.log("read from whisker");
-    console.log(value);
-    if (value === HIGH){
-      console.log("halting vehicle");
-      carBrain.halt();  // whisker has hit something
-    } else {
-      console.log("vehicle forward");
-      carBrain.forward();
-    }
-  });
 };
 
 // motor factory class for spawning motors
@@ -154,9 +152,7 @@ var loop = function(){
 };
 
 var setup = function(){
-  console.log("running setup");
-  console.log("setting led pin");
-
+  console.log("starting engine");
   knightRider.startEngine();  // enable motor and whisker pins
 
   console.log("forward");
