@@ -1,75 +1,106 @@
 var gpio = require("pi-gpio");
 
-var INTERVAL = 500;
+var INTERVAL = 50;
 
 var LOW = 0;
 var HIGH = 1;
 
-var LEFT_MOTOR_ENABLE = 7;
-var LEFT_MOTOR_1 = 12;
-var LEFT_MOTOR_2 = 22;
+// whisker pins
+var RIGHT_WHISKER_1 = 16;
+var RIGHT_WHISKER_2 = 18;
+var LEFT_WHISKER_1 = 13;
+var LEFT_WHISKER_2 = 15;
 
-// left antennae of bugbot
-var ANTLEFT_PIN = 16;
-var ANTLEFT_OUT_PIN = 18;
+// motor pins
+var RIGHT_MOTOR_1 = 12;
+var RIGHT_MOTOR_2 = 22;
+var LEFT_MOTOR_1 = 7;
+var LEFT_MOTOR_2 = 15;
 
-var turnOn = function(){
-  gpio.write(LEFT_MOTOR_1, HIGH, function(){});
-  gpio.write(LEFT_MOTOR_2, LOW, function(){});
-};
-
-var turnOff = function(){
-  gpio.write(LEFT_MOTOR_1, LOW, function(){});
-  gpio.write(LEFT_MOTOR_1, LOW, function(){});
-};
+// for cleanup at bottom
+var ALL_PINS = [
+  RIGHT_WHISKER_1,
+  RIGHT_WHISKER_2,
+  LEFT_WHISKER_1,
+  LEFT_WHISKER_2,
+  RIGHT_MOTOR_1,
+  RIGHT_MOTOR_2,
+  LEFT_MOTOR_1,
+  LEFT_MOTOR_2
+];
 
 var loop = function(){
 
-  gpio.read(ANTLEFT_PIN, function(err, value){
+  gpio.read(RIGHT_WHISKER_2, function(err, value){
     console.log(value);
     //console.log(err);
     if (value === HIGH){
       // circuit is closed, bug has hit something
       // stop and initiate rotating
-      turnOn();
+      stopMotors();
     } else {
       // all's clear
-      turnOff();
+      startMotors();
     }
+    // TODO: instead of constant adjusting, store value and only call these if change?
 
   }); 
 
+};
+
+var startMotors = function(){
+  startLeft();
+  startRight();
+};
+
+var startLeft = function(){
+  gpio.write(LEFT_MOTOR_1, HIGH, function(){});
+  gpio.write(LEFT_MOTOR_2, LOW, function(){});
+};
+
+var startRight = function(){
+  gpio.write(RIGHT_MOTOR_1, HIGH, function(){});
+  gpio.write(RIGHT_MOTOR_2, LOW, function(){});
+};
+
+var stopMotors = function(){
+  stopLeft();
+  stopRight();
+};
+
+var stopLeft = function(){
+  gpio.write(LEFT_MOTOR_1, LOW, function(){});
+  gpio.write(LEFT_MOTOR_2, LOW, function(){});
+};
+
+var stopRight = function(){
+  gpio.write(RIGHT_MOTOR_1, LOW, function(){});
+  gpio.write(RIGHT_MOTOR_2, LOW, function(){});
 };
 
 var setup = function(){
   console.log("running setup");
 
   console.log("setting led pin");
-  gpio.open(LEFT_MOTOR_ENABLE, "output", function(err) {
-    gpio.write(LEFT_MOTOR_ENABLE, HIGH, function(){});
-  });
+
+  gpio.open(RIGHT_MOTOR_1, "output", function(err) {});
+  gpio.open(RIGHT_MOTOR_2, "output", function(err) {});
+
   gpio.open(LEFT_MOTOR_1, "output", function(err) {});
   gpio.open(LEFT_MOTOR_2, "output", function(err) {});
 
   console.log("setting antennae left pin");
-  gpio.open(ANTLEFT_PIN, "input", function(err){});
-  gpio.open(ANTLEFT_OUT_PIN, "output", function(err){
-    gpio.write(ANTLEFT_OUT_PIN, HIGH, function(){});
+  gpio.open(RIGHT_WHISKER_1, "input", function(err){});
+  gpio.open(RIGHT_WHISKER_2, "output", function(err){
+    gpio.write(RIGHT_WHISKER_2, HIGH, function(){});
   });
   
   setInterval(loop, INTERVAL);
 };
 
+// start the beast
 setup();
 
-var http = require('http');
-var fs = require('fs');
-var index = fs.readFileSync('ui/app/index.html');
-
-http.createServer(function (req, res) {
-  res.writeHead(200, {'Content-Type': 'text/plain'});
-  res.end(index);
-}).listen(8080);
 
 
 // close all pins on program exit or ctrl-c
@@ -78,12 +109,9 @@ process.stdin.resume();//so the program will not close instantly
 
 function exitHandler(options, err) {
     if (options.cleanup){
-      turnOff();
-      gpio.close(ANTLEFT_PIN);
-      gpio.close(ANTLEFT_OUT_PIN);
-      gpio.close(LEFT_MOTOR_ENABLE);
-      gpio.close(LEFT_MOTOR_1);
-      gpio.close(LEFT_MOTOR_2);
+      for (var i = 0; i < ALL_PINS.length; i++){
+        gpio.close(ALL_PINS[i]);
+      }
     }
     if (options.exit) process.exit();
 }
