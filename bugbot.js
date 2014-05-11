@@ -120,7 +120,11 @@ KnightRider.prototype.checkWhiskers = function(){
 
 // runs in loop; checks whiskers and turns robot if
 // we detect a whisker collision
-KnightRider.prototype.run = function(){
+KnightRider.prototype.update = function(){
+
+  // check object state
+  
+  
   // why do I need to call this over and over?
   this.forward();
   
@@ -193,7 +197,7 @@ console.log(knightRider.whiskers.length);
 
 // this guy runs over and over in continuous loop
 var loop = function(){
-  knightRider.run(); 
+  knightRider.update(); 
 };
 
 var setup = function(){
