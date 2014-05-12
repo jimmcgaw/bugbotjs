@@ -1,6 +1,6 @@
 var gpio = require("pi-gpio");
 
-var INTERVAL = 500;
+var INTERVAL = 33;
 
 var LOW = 0;
 var HIGH = 1;
@@ -133,7 +133,7 @@ KnightRider.prototype.left = function(){
 };
 
 KnightRider.prototype.rotate = function(){
-  this.left();
+    this.left();
 };
 
 KnightRider.prototype.startEngine = function(){
@@ -171,33 +171,35 @@ KnightRider.prototype.checkWhiskers = function(){
 // intiates a state sequence that resets the robot
 // to forward in a different direction.
 KnightRider.prototype.reset = function(){
-  // stop robot immediately ( t = 0 seconds )
-  this.state = "halt";
+  var vehicle = this;
 
-  // t = 2 : go in reverse 
+  // stop robot immediately ( t = 0 seconds )
+  vehicle.state = "halt";
+
+  // t = 1 : go in reverse 
   setTimeout(function(){
-    this.state = "reverse";
+    vehicle.state = "reverse";
+  }, 1000);
+
+  // t = 1.5 : stop again 
+  setTimeout(function(){
+    vehicle.state = "halt"
+  }, 1500);
+
+  // t = 2 : rotate
+  setTimeout(function(){
+    vehicle.state = "rotate"
   }, 2000);
 
-  // t = 3 : stop again for a second
+  // t = 3.5 : stop again
   setTimeout(function(){
-    this.state = "halt"
-  }, 3000);
+    vehicle.state = "halt"
+  }, 3500);
 
-  // t = 4 : rotate for 2 seconds
+  // t = 4: stop again
   setTimeout(function(){
-    this.state = "rotate"
+    vehicle.state = "forward"
   }, 4000);
-
-  // t = 6 : stop again for a half second
-  setTimeout(function(){
-    this.state = "halt"
-  }, 6000);
-
-  // t = 6.5 : stop again for a second
-  setTimeout(function(){
-    this.state = "forward"
-  }, 6500);
 };
 
 // runs in loop; checks whiskers and turns robot if
@@ -213,7 +215,7 @@ KnightRider.prototype.update = function(){
     this.halt();
   } else if (this.state === "reverse") {
     this.reverse();
-  } else if (this.state === "rotating") {
+  } else if (this.state === "rotate") {
     this.rotate();
   }
 
