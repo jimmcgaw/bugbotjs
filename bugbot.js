@@ -181,22 +181,22 @@ KnightRider.prototype.reset = function(){
 
   // t = 3 : stop again for a second
   setTimeout(function(){
-    this.state = "halt"
+    this.state = "halt";
   }, 3000);
 
   // t = 4 : rotate for 2 seconds
   setTimeout(function(){
-    this.state = "rotate"
+    this.state = "rotate";
   }, 4000);
 
   // t = 6 : stop again for a half second
   setTimeout(function(){
-    this.state = "halt"
+    this.state = "halt";
   }, 6000);
 
   // t = 6.5 : stop again for a second
   setTimeout(function(){
-    this.state = "forward"
+    this.state = "forward";
   }, 6500);
 };
 
