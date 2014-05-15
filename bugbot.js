@@ -41,10 +41,10 @@ var rightMotorPins = {
   motor_2 : RIGHT_MOTOR_2
 };
 
-var rightMotor = new daftbot.Whisker(rightMotorPins);
-var leftMotor = new daftbot.Whisker(leftMotorPins);
+var rightMotor = new daftbot.Motor(rightMotorPins);
+var leftMotor = new daftbot.Motor(leftMotorPins);
 
-var vehicle = new Vehicle({
+var vehicle = new daftbot.Vehicle({
   leftMotor : leftMotor,
   rightMotor : rightMotor
 });
@@ -69,7 +69,7 @@ var leftWhisker = new daftbot.Whisker(leftWhiskerPins);
 vehicle.addSensor(rightWhisker);
 vehicle.addSensor(leftWhisker);
 
-console.log(vehicle.whiskers.length);
+console.log(vehicle.sensors.length);
 
 // this guy runs over and over in continuous loop
 var loop = function(){
