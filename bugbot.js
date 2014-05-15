@@ -1,4 +1,11 @@
+// TODO : we shouldn't need this imported here, only as dependency in daftbot.js
 var gpio = require("pi-gpio");
+
+// don't npm install this
+// you can, but while developing you should clone this:
+// https://github.com/smoochy/daftbot
+// and 'npm link' from the project directory
+var daftbot = require('daftbot');
 
 var INTERVAL = 33;
 
@@ -17,64 +24,6 @@ var RIGHT_MOTOR_2 = 22;
 var LEFT_MOTOR_1 = 7;
 var LEFT_MOTOR_2 = 15;
 
-// manages and senses the state of a single whisker
-//
-// @param Object 'pins'
-//   pins.pinIn
-//   pins.out
-var Whisker = function(pins){
-  this.pinIn = pins.pinIn;
-  this.out = pins.out; 
-};
-
-Whisker.prototype.enable = function(){
-  console.log("enabling whisker pins " + this.pinIn + " and " + this.out);
-  gpio.open(this.pinIn, "input", function(){});
-  
-  var whisker_out = this.out;
-  gpio.open(whisker_out, "output", function(){
-    gpio.write(whisker_out, HIGH, function(){});
-  });
-
-};
-
-// this controls the state of a single servo motor
-//
-// @param Object 'pins'
-//   pins.motor_1
-//   pins.motor_2
-var Motor = function(pins){
-  this.pins = pins;
-};
-
-Motor.prototype.enable = function(){
-  console.log("enabling motor pins " + this.pins.motor_1 + " and " + this.pins.motor_2);
-  gpio.open(this.pins.motor_1, "output", function(){})
-  gpio.open(this.pins.motor_2, "output", function(){})
-  
-};
-
-// bring to complete stop
-Motor.prototype.halt = function(){
-  gpio.write(this.pins.motor_1, LOW, function(){});
-  gpio.write(this.pins.motor_2, LOW, function(){});
-};
-
-// start motor forward
-Motor.prototype.forward = function(){
-  console.log("Motor on pin " + this.pins.motor_1 + " set to forward");
-  // TODO : abstract this away
-  gpio.write(this.pins.motor_2, LOW, function(){});
-  gpio.write(this.pins.motor_1, HIGH, function(){});
-};
-
-// start motor backwards
-Motor.prototype.reverse = function(){
-  console.log("Motor on pin " + this.pins.motor_1 + " set to forward");
-  // TODO : abstract this away
-  gpio.write(this.pins.motor_1, LOW, function(){});
-  gpio.write(this.pins.motor_2, HIGH, function(){});
-};
 
 // car brain - this commands and manages the motors in aggregate
 // @param Array 'motors' - array of Motor objects
@@ -221,12 +170,17 @@ KnightRider.prototype.update = function(){
 
 };
 
+
+
+// TODO: we can dispense with the factories,
+// they really aren't adding much value.
+// Either that or move into daftbot
 console.log("creating MOTORS!");
 // motor factory class for spawning motors
 var MotorMaker = function(){
 };
 
-MotorMaker.prototype.motorClass = Motor;
+MotorMaker.prototype.motorClass = daftbot.Motor;
 
 MotorMaker.prototype.createMotor = function(pins){
   return new this.motorClass(pins);
@@ -259,7 +213,7 @@ console.log("creating WHISKERS!");
 var WhiskerMaker = function(){
 };
 
-WhiskerMaker.prototype.whiskerClass = Whisker;
+WhiskerMaker.prototype.whiskerClass = daftbot.Whisker;
 
 WhiskerMaker.prototype.createWhisker = function(pins){
   return new this.whiskerClass(pins);
